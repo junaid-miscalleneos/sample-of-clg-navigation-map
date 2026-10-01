@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Navigation System</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --accent: #ff6b6b;
+            --road: #e2e8f0;
+            --room-stroke: #94a3b8;
+            --room-fill: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 850px;
+            text-align: center;
+        }
+
+        h2 { color: #1e293b; margin-top: 0; }
+        p { color: #64748b; font-size: 0.95rem; }
+
+        .search-box {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        input {
+            padding: 10px 16px;
+            font-size: 1rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            width: 200px;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: #1d4ed8; }
+
+        .map-wrapper {
+            margin-top: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 10px;
+            overflow: auto;
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+        }
+
+        /* SVG Layout Styling */
+        .roadway { fill: var(--road); }
+        .outer-boundary { fill: none; stroke: #334155; stroke-width: 4; }
+        .inner-island { fill: #f1f5f9; stroke: #94a3b8; stroke-width: 2; }
+        
+        .room {
+            fill: var(--room-fill);
+            stroke: var(--room-stroke);
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .room:hover { fill: #eff6ff; }
+        
+        .room-text {
+            font-weight: 600;
+            font-size: 14px;
+            fill: #475569;
+            pointer-events: none;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        /* Navigation Animation Highlights */
+        .highlight-room {
+            fill: #ffedd5 !important;
+            stroke: #ea580c !important;
+            stroke-width: 3px;
+            animation: pulseRoom 1.5s infinite alternate;
+        }
+
+        .nav-path {
+            fill: none;
+            stroke: #06b6d4;
+            stroke-width: 5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 800;
+            stroke-dashoffset: 800;
+            animation: drawPath 2s ease-out forwards;
+        }
+
+        @keyframes drawPath {
+            to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes pulseRoom {
+            from { fill: #ffedd5; }
+            to { fill: #fed7aa; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Department Navigation System</h2>
+    <p>Enter a room number to get interactive visual directions from the Main Entrance.</p>
+
+    <div class="search-box">
+        <input type="number" id="roomInput" placeholder="Room No. (1 - 11)" min="1" max="11">
+        <button onclick="findRoom()">Find Room</button>
+    </div>
+
+    <div class="map-wrapper">
+        <svg id="campusMap" viewBox="0 0 800 600">
+            <!-- Background Roadway Network -->
+            <rect class="roadway" x="100" y="80" width="600" height="440"/>
+            <rect class="inner-island" x="220" y="160" width="380" height="280" rx="20"/>
+
+            <!-- TOP ROW ROOMS -->
+            <g id="room-container-1"><rect id="room-1" class="room" x="500" y="10" width="100" height="70"/><text x="550" y="45" class="room-text">Room 1</text></g>
+            <g id="room-container-2"><rect id="room-2" class="room" x="380" y="10" width="120" height="70"/><text x="440" y="45" class="room-text">Room 2</text></g>
+            <g id="room-container-3"><rect id="room-3" class="room" x="240" y="10" width="140" height="70"/><text x="310" y="45" class="room-text">Room 3</text></g>
+            <g id="room-container-4"><rect id="room-4" class="room" x="100" y="10" width="140" height="70"/><text x="170" y="45" class="room-text">Room 4</text></g>
+
+            <!-- LEFT SIDE ROOMS -->
+            <g id="room-container-5"><rect id="room-5" class="room" x="10" y="80" width="90" height="110"/><text x="55" y="135" class="room-text">Room 5</text></g>
+            <g id="room-container-6"><rect id="room-6" class="room" x="10" y="190" width="90" height="110"/><text x="55" y="245" class="room-text">Room 6</text></g>
+            <g id="room-container-7"><rect id="room-7" class="room" x="10" y="300" width="90" height="110"/><text x="55" y="355" class="room-text">Room 7</text></g>
+
+            <!-- BOTTOM ROW ROOMS -->
+            <g id="room-container-8"><rect id="room-8" class="room" x="100" y="520" width="150" height="70"/><text x="175" y="555" class="room-text">Room 8</text></g>
+            <g id="room-container-9"><rect id="room-9" class="room" x="250" y="520" width="130" height="70"/><text x="315" y="555" class="room-text">Room 9</text></g>
+            <g id="room-container-10"><rect id="room-10" class="room" x="380" y="520" width="110" height="70"/><text x="435" y="555" class="room-text">Room 10</text></g>
+            <g id="room-container-11"><rect id="room-11" class="room" x="490" y="520" width="110" height="70"/><text x="545" y="555" class="room-text">Room 11</text></g>
+
+            <!-- ENTRANCE (Right side) -->
+            <line x1="700" y1="300" x2="780" y2="300" stroke="#334155" stroke-width="4"/>
+            <text x="740" y="285" font-weight="bold" fill="#1e293b" text-anchor="middle">ENTRANCE</text>
+
+            <!-- Outer Visual Frame Border -->
+            <rect class="outer-boundary" x="5" y="5" width="790" height="590" rx="10"/>
+
+            <!-- Container for the Dynamic Route Line -->
+            <path id="guidePath" class="" d="" />
+        </svg>
+    </div>
+</div>
+
+<script>
+    // Dictionary tracking coordinates mapping from Main Entrance [x: 740, y: 300] to each room's center roadway node
+    const pathways = {
+        1: "M 740 300 L 650 300 L 650 120 L 550 120 L 550 82",
+        2: "M 740 300 L 650 300 L 650 120 L 440 120 L 440 82",
+        3: "M 740 300 L 650 300 L 650 120 L 310 120 L 310 82",
+        4: "M 740 300 L 650 300 L 650 120 L 170 120 L 170 82",
+        
+        5: "M 740 300 L 650 300 L 650 120 L 160 120 L 160 135 L 102 135",
+        6: "M 740 300 L 650 300 L 160 300 L 160 245 L 102 245",
+        7: "M 740 300 L 650 300 L 650 480 L 160 480 L 160 355 L 102 355",
+        
+        8: "M 740 300 L 650 300 L 650 480 L 175 480 L 175 518",
+        9: "M 740 300 L 650 300 L 650 480 L 315 480 L 315 518",
+        10: "M 740 300 L 650 300 L 650 480 L 435 480 L 435 518",
+        11: "M 740 300 L 650 300 L 650 480 L 545 480 L 545 518"
+    };
+
+    function findRoom() {
+        const roomInput = document.getElementById('roomInput').value.trim();
+        const roomNumber = parseInt(roomInput);
+        
+        // Reset existing states
+        document.querySelectorAll('.room').forEach(r => r.classList.remove('highlight-room'));
+        const pathElement = document.getElementById('guidePath');
+        pathElement.setAttribute('d', '');
+        pathElement.classList.remove('nav-path');
+
+        // Validation Check
+        if (isNaN(roomNumber) || roomNumber < 1 || roomNumber > 11) {
+            alert("Please enter a valid room number between 1 and 11.");
+            return;
+        }
+
+        // Highlight targeted room box
+        const targetRoom = document.getElementById(`room-${roomNumber}`);
+        if (targetRoom) {
+            targetRoom.classList.add('highlight-room');
+        }
+
+        // Generate and draw the animated direction pathway
+        if (pathways[roomNumber]) {
+            // Tiny timeout re-triggers the SVG dasharray drawing animation smoothly
+            setTimeout(() => {
+                pathElement.setAttribute('d', pathways[roomNumber]);
+                pathElement.classList.add('nav-path');
+            }, 50);
+        }
+    }
+
+    // Allow pressing 'Enter' key inside input box to trigger search directly
+    document.getElementById('roomInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            findRoom();
+        }
+    });
+</script>
+
+</body>
+</html>
